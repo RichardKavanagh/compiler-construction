@@ -1,0 +1,175 @@
+/**
+ *  A Lexical Analyser for the SimpL language for CA 448
+ * 
+ * @Author Richard Kavanagh 
+ */
+
+
+/*******************************
+***** SECTION 1 - OPTIONS *****
+*******************************/
+
+options {
+	JAVA_UNICODE_ESCAPE = true;
+    IGNORE_CASE = true;
+    STATIC = true;
+}
+
+
+/*************************************
+***** SECTION 2 - PARSER USER CODE ***
+**************************************/
+
+PARSER_BEGIN(SimpLTokeniser)
+	public class SimpLTokeniser {
+		public static void main(String args[]) {
+			SimpLTokeniser tokeniser;
+			if (args.length == 0) {
+				System.out.println("Reading from standard input . . .");
+				tokeniser = new SimpLTokeniser(System.in);
+			}
+			else if (args.length == 1) {
+				try {
+					tokeniser = new SimpLTokeniser(new java.io.FileInputStream(args[0]));
+				} catch (java.io.FileNotFoundException e) {
+					System.err.println("File " + args[0] + " not found.");
+					return;
+				}
+			}
+			else {
+				System.out.println("SLP Tokeniser: Usage is one of:");
+				System.out.println(" java SimpLTokeniser < inputfile");
+				System.out.println("OR");
+				System.out.println(" java SimpLTokeniser inputfile");
+				return;
+			}
+
+			for (Token t = getNextToken(); t.kind!=EOF; t = getNextToken()) {
+				System.out.println(t.image+" " + t.kind);
+			}
+		}
+	}
+PARSER_END(SimpLTokeniser)
+
+
+/*****************************************
+***** SECTION 3 - TOKEN DEFINITIONS *****
+*****************************************/
+
+
+
+TOKEN_MGR_DECLS: {
+	static int commentDepth = 0;
+}
+
+/* Comments */
+
+
+SKIP:{ "--" { commentDepth = 1; }: COMMENT }
+<COMMENT > SKIP : { "\n" {
+	commentDepth -= 1; 
+	SwitchTo( commentDepth == 0 ? DEFAULT : COMMENT ); } }
+
+
+SKIP:{ "/*" { commentDepth = 1; }: COMMENT }
+<COMMENT > SKIP : { "/*" { commentDepth +=1; } }
+<COMMENT > SKIP : { "*/" {
+	commentDepth -= 1; 
+	SwitchTo( commentDepth == 0 ? DEFAULT : COMMENT ); } }
+
+
+<COMMENT > SKIP: { < ~[] > }
+
+
+/* Ignoring spaces/tabs/newlines */
+
+SKIP : {
+	" "
+	| "\t"
+	| "\n"
+	| "\r"
+	| "\f"
+}
+
+
+
+/* Keywords */
+TOKEN :  {
+	< AND : "and" >
+	| < BOOL : "bool" >
+	| < CONST : "const" >
+	| < DO : "do" >
+	| < ELSE : "else" >
+	| < FALSE : "false" >
+	| < IF : "if" >
+	| < INT : "int" >
+	| < MAIN : "main" >
+	| < NOT : "not" >
+	| < OR : "or" >
+	| < REAL : "real" >
+	| < RETURN : "return" >
+	| < STRING : "string" >
+	| < THEN : "then" >
+	| < TRUE : "true" >
+	| < VAR : "var" >
+	| < VOID : "void" >
+	| < WHILE : "while" >
+}
+
+
+/* Operators, Relations and Punctuation marks */
+TOKEN :  {
+	< PLUS : "+" >
+	| < MINUS : "-" >
+	| < MULTIPLY : "*" >
+	| < DIVIDE : "/" >
+	| < MODULUS : "%" >
+	| < EQUALS : "=" >
+	| < NOTEQUALS : "!=" >
+	| < LESS : "<" >
+	| < GREATER : ">" >
+	| < LESSEQUAL : "<=" >
+	| < GREATEREQUAL : ">=" >
+	| < OPENBRACKET : "(" >
+	| < CLOSEBRACKET : ")" >
+	| < OPENCURLY : "{" >
+	| < CLOSECURLY : "}" >
+	| < COMMA : "," >
+	| < SEMIC : ";" >
+	| < COLON : ":" >
+	| < DOT : "." >
+	| < ASSIGNMENT : ":=" >
+	| < QUESTIONMARK : "?" >
+	| < EXCLAMATION : "!" >
+}
+
+
+/* Numbers  */
+TOKEN :  {
+	< NUM : (<MINUS>)? (<DIGIT>)+ >
+	| < DOUBLE : ((<MINUS>)? (<DIGIT>)+ <DOT> (<DIGIT>)+) >
+	| < #DIGIT : ["0" - "9"] > 
+}
+
+
+/* Strings  */
+TOKEN : { 
+	< CHARS : <QUOTE>  ( (<CHAR>)
+	 				   | (<BACKSLASH><QUOTE>)
+	 				   | (<BACKSLASH><BACKSLASH>)
+	 				   | (<BACKSLASH><BACKSLASH><NEWLINE>)
+	 		)* <QUOTE> >
+	| < #CHAR : ["a"-"z","A"-"Z", " "]>
+	| < #QUOTE : ("\"") >
+	| < #BACKSLASH : "\\" >
+	| < #NEWLINE : "N" >
+}
+
+
+/* Identifiers */
+TOKEN : {
+	<ID : <LETTER> (<IDSUFFIX>)* > 
+	| < #IDSUFFIX : <LETTER> | <DIGIT> | <UNDERSCORE> >
+	| < #LETTER : ["a"-"z","A"-"Z"]>
+	| < UNDERSCORE : "_" >	
+}
