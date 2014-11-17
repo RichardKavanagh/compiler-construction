@@ -44,11 +44,114 @@ PARSER_BEGIN(SimpLTokeniser)
 				return;
 			}
 
-			for (Token t = getNextToken(); t.kind!=EOF; t = getNextToken()) {
-				System.out.println(t.image+" " + t.kind);
+			for(Token token = getNextToken(); token.kind != EOF; token = getNextToken()){
+
+				switch(token.kind){
+					case IDENTIFIER:{
+						System.out.print("IDENTIFIER("+token.image+") ");
+						break;
+					}
+					case NUM:{
+						System.out.print("NUM("+token.image+") ");
+						break;
+					}
+					case DOUBLE:{
+						System.out.print("DOUBLE("+token.image+") ");
+						break;
+					}
+					case CHARS:{
+						System.out.print("STRING("+token.image+") ");
+						break;
+					}
+					case AND:{
+						System.out.print("AND ");
+						break;
+					}
+					case BOOL:{
+						System.out.print("BOOL ");
+						break;
+					}
+					case CONST:{
+						System.out.print("CONST ");
+						break;
+					}
+					case DO:{
+						System.out.print("DO ");
+						break;
+					}
+					case ELSE:{
+						System.out.print("ELSE ");
+						break;
+					}
+					case FALSE:{
+						System.out.print("FALSE ");
+						break;
+					}
+					case IF:{
+						System.out.print("IF ");
+						break;
+					}
+					case INT:{
+						System.out.print("INT ");
+						break;
+					}
+					case MAIN:{
+						System.out.print("MAIN ");
+						break;
+					}
+					case NOT:{
+						System.out.print("NOT ");
+						break;
+					}
+					case OR:{
+						System.out.print("OR ");
+						break;
+					}
+					case REAL:{
+						System.out.print("REAL ");
+						break;
+					}
+					case RETURN:{
+						System.out.print("RETURN ");
+						break;
+					}
+					case STRING:{
+						System.out.print("STRING ");
+						break;
+					}
+					case THEN:{
+						System.out.print("THEN ");
+						break;
+					}
+					case TRUE:{
+						System.out.print("TRUE ");
+						break;
+					}
+					case VAR:{
+						System.out.print("VAR ");
+						break;
+					}
+					case VOID:{
+						System.out.print("VOID ");
+						break;
+					}
+					case WHILE:{
+						System.out.print("WHILE ");
+						break;
+					}
+					case OTHER:{
+						System.out.print("UNDEFINED TOKEN " + "("+token.image+ ") ");
+						break;
+					}
+					default:{
+						System.out.print("" + token.image + " ");
+						break;
+					}
 			}
 		}
 	}
+}
+
 PARSER_END(SimpLTokeniser)
 
 
@@ -59,27 +162,26 @@ PARSER_END(SimpLTokeniser)
 
 
 TOKEN_MGR_DECLS: {
-	static int commentDepth = 0;
+	static int commentNestingLevel = 0;
 }
 
-/* Comments */
+
+/* Single level comments */
+SKIP : {  "--"  { commentNestingLevel = 1 ; } : COMMENT } 
+< COMMENT >  SKIP : {  "\n"  {
+    commentNestingLevel -= 1;
+    SwitchTo( commentNestingLevel == 0 ? COMMENT : DEFAULT ) ; } } 
 
 
-SKIP:{ "--" { commentDepth = 1; }: COMMENT }
-<COMMENT > SKIP : { "\n" {
-	commentDepth -= 1; 
-	SwitchTo( commentDepth == 0 ? DEFAULT : COMMENT ); } }
+/* Nested Comments */
+SKIP : {  "/*"  { commentNestingLevel = 0 ; } : COMMENT } 
+< COMMENT >  SKIP : {  "/*" { commentNestingLevel += 1 ; } } 
+< COMMENT >  SKIP : {  "*/" {
+    commentNestingLevel -= 1;
+    SwitchTo( commentNestingLevel == 0 ? DEFAULT : COMMENT ) ; } } 
 
 
-SKIP:{ "/*" { commentDepth = 1; }: COMMENT }
-<COMMENT > SKIP : { "/*" { commentDepth +=1; } }
-<COMMENT > SKIP : { "*/" {
-	commentDepth -= 1; 
-	SwitchTo( commentDepth == 0 ? DEFAULT : COMMENT ); } }
-
-
-<COMMENT > SKIP: { < ~[] > }
-
+< COMMENT >  SKIP : {  < ~[] > } 
 
 /* Ignoring spaces/tabs/newlines */
 
@@ -90,7 +192,6 @@ SKIP : {
 	| "\r"
 	| "\f"
 }
-
 
 
 /* Keywords */
@@ -162,14 +263,19 @@ TOKEN : {
 	| < #CHAR : ["a"-"z","A"-"Z", " "]>
 	| < #QUOTE : ("\"") >
 	| < #BACKSLASH : "\\" >
-	| < #NEWLINE : "N" >
+	| < #NEWLINE : "N" | "R" >
 }
 
 
 /* Identifiers */
 TOKEN : {
-	<ID : <LETTER> (<IDSUFFIX>)* > 
+	<IDENTIFIER : <LETTER> (<IDSUFFIX>)* > 
 	| < #IDSUFFIX : <LETTER> | <DIGIT> | <UNDERSCORE> >
 	| < #LETTER : ["a"-"z","A"-"Z"]>
 	| < UNDERSCORE : "_" >	
+}
+
+/* Catch all for undefined tokens */
+TOKEN : {
+	<OTHER : ~[]>
 }
