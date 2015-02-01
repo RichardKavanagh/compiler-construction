@@ -1,5 +1,5 @@
 /**
- *  A Lexical Analyser for the SimpL language for CA 448
+ *  A Lexical analyser for the SimpL language.
  * 
  * @Author Richard Kavanagh 
  */
@@ -11,8 +11,8 @@
 
 options {
 	JAVA_UNICODE_ESCAPE = true;
-    IGNORE_CASE = true;
-    STATIC = true;
+	IGNORE_CASE = true;
+	STATIC = true;
 }
 
 
@@ -45,108 +45,7 @@ PARSER_BEGIN(SimpLTokeniser)
 			}
 
 			for(Token token = getNextToken(); token.kind != EOF; token = getNextToken()){
-
-				switch(token.kind){
-					case IDENTIFIER:{
-						System.out.print("IDENTIFIER("+token.image+") ");
-						break;
-					}
-					case NUM:{
-						System.out.print("NUM("+token.image+") ");
-						break;
-					}
-					case DOUBLE:{
-						System.out.print("DOUBLE("+token.image+") ");
-						break;
-					}
-					case CHARS:{
-						System.out.print("STRING("+token.image+") ");
-						break;
-					}
-					case AND:{
-						System.out.print("AND ");
-						break;
-					}
-					case BOOL:{
-						System.out.print("BOOL ");
-						break;
-					}
-					case CONST:{
-						System.out.print("CONST ");
-						break;
-					}
-					case DO:{
-						System.out.print("DO ");
-						break;
-					}
-					case ELSE:{
-						System.out.print("ELSE ");
-						break;
-					}
-					case FALSE:{
-						System.out.print("FALSE ");
-						break;
-					}
-					case IF:{
-						System.out.print("IF ");
-						break;
-					}
-					case INT:{
-						System.out.print("INT ");
-						break;
-					}
-					case MAIN:{
-						System.out.print("MAIN ");
-						break;
-					}
-					case NOT:{
-						System.out.print("NOT ");
-						break;
-					}
-					case OR:{
-						System.out.print("OR ");
-						break;
-					}
-					case REAL:{
-						System.out.print("REAL ");
-						break;
-					}
-					case RETURN:{
-						System.out.print("RETURN ");
-						break;
-					}
-					case STRING:{
-						System.out.print("STRING ");
-						break;
-					}
-					case THEN:{
-						System.out.print("THEN ");
-						break;
-					}
-					case TRUE:{
-						System.out.print("TRUE ");
-						break;
-					}
-					case VAR:{
-						System.out.print("VAR ");
-						break;
-					}
-					case VOID:{
-						System.out.print("VOID ");
-						break;
-					}
-					case WHILE:{
-						System.out.print("WHILE ");
-						break;
-					}
-					case OTHER:{
-						System.out.print("UNDEFINED TOKEN " + "("+token.image+ ") ");
-						break;
-					}
-					default:{
-						System.out.print("" + token.image + " ");
-						break;
-					}
+				System.out.print(token.image);	
 			}
 		}
 	}
@@ -158,7 +57,6 @@ PARSER_END(SimpLTokeniser)
 /*****************************************
 ***** SECTION 3 - TOKEN DEFINITIONS *****
 *****************************************/
-
 
 
 TOKEN_MGR_DECLS: {
