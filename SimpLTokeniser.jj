@@ -279,3 +279,125 @@ TOKEN : {
 TOKEN : {
 	<OTHER : ~[]>
 }
+
+
+/*****************************************
+***** SECTION 4 - Production Rules *****
+*****************************************/
+
+
+SimpleNode program() : {} {
+    (declaration())* 
+    (function())* 
+    main_program()
+    <EOF> {
+        return jjtThis;
+    }
+}
+
+
+void main_program() : {} {
+    <MAIN> <OPENCURLY> 
+        (declaration())*
+        (statement() <SEMIC>)*
+    <CLOSECURLY>
+}
+
+
+void statement() : {} {
+		<IDENTIFIER> (<ASSIGNMENT> (expression() | <CHARS>)| <OPENBRACKET> argument_list() <CLOSEBRACKET> )
+		| <EXCLAMATION> expression()
+		| <OPENBRACKET> (statement() <SEMIC>)* <CLOSEBRACKET>
+		| <QUESTIONMARK> expression()
+		| <IF> condition() <THEN> ((<OPENCURLY>(statement() <SEMIC> )*  <CLOSECURLY>) | ( statement() ) ) <ELSE> <OPENCURLY> statement() <CLOSECURLY>
+		| <WHILE> condition() <DO> ( (<OPENCURLY> (statement() <SEMIC> )*  <CLOSECURLY>)  |(statement() )) 
+		| {}
+}
+
+ 
+void declaration() : {} {
+	(variable_declaration() | const_declaration())
+}
+
+
+void const_declaration() : {} {
+    <CONST> <IDENTIFIER> <COLON> types() <ASSIGNMENT> expression()( <COMMA> <IDENTIFIER> <COLON> types() <ASSIGNMENT> expression())*
+}
+
+
+void variable_declaration() #VAR : {} {
+	<VAR> identifiers_list() <COLON> types() ( <COMMA> identifiers_list() <COLON> types() )* <SEMIC>
+}
+
+
+void identifiers_list () :{}{
+	<IDENTIFIER> (<COMMA><IDENTIFIER>)*
+}
+
+
+void types () :{} {
+	<INT> |
+	<BOOL> |
+	<REAL> |
+	<STRING> |
+	<VOID>	
+}
+
+
+void expression() : {} {
+      (<IDENTIFIER> (fragment_second() | <OPENBRACKET> argument_list() <CLOSEBRACKET> | {} ) |
+      (fragment()  (fragment_second())*)) 
+}
+
+
+void condition() : {} {
+      <NOT> expression()	|
+	  expression() (comparision_operator()) expression() 
+}
+
+
+void comparision_operator() : {} {
+	<EQUALS> 		|
+	<NOTEQUALS>		| 
+	<LESSEQUAL>	 	| 
+	<GREATEREQUAL>	| 
+	<LESS> 			| 
+	<GREATER> 		| 
+	<AND>			| 
+	<OR>
+}
+
+
+void function() : {} {
+	types() <IDENTIFIER> <OPENBRACKET>  paramater_list() <CLOSEBRACKET>
+	 <OPENCURLY>
+		( declaration() )*
+		( statement() <SEMIC> )*
+		<RETURN> ( expression() | {} ) <SEMIC>
+	<CLOSECURLY>
+}
+
+
+void paramater_list() : {} {
+		<IDENTIFIER>
+		<COLON>
+		types()
+		( <COMMA> <IDENTIFIER> <COLON> types() )* | {}
+}
+
+
+void fragment() : {} {
+	<NUM>	| (<PLUS>	| <MINUS>	| <MULTIPLY> | <DIVIDE>	| <MODULUS> )
+	fragment() (fragment_second() | {})
+}
+ 
+
+void fragment_second() : {} {
+    ((<PLUS>	| <MINUS>	| <MULTIPLY> | <DIVIDE>	| <MODULUS>
+    ) ((<IDENTIFIER> (fragment_second() | {})) | fragment()))
+}
+
+				
+void argument_list() : {Token t;} { 
+	(<IDENTIFIER>)* (<COMMA>  <IDENTIFIER>)*
+}
